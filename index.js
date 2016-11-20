@@ -4,6 +4,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const request = require('request');
 const fs = require('fs');
+const coinbase = require('coinbase');
 const app = express();
 
 var sessions = {};	// store session information
