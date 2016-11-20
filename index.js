@@ -4,7 +4,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const request = require('request');
 const fs = require('fs');
-const coinbase = require('coinbase');
 const app = express();
 
 var sessions = {};	// store session information
@@ -73,12 +72,98 @@ app.post('/api/', function (req, res) {
 
 app.get("/sendMoney/", function(request, response, next) {
     console.log("send money")
-		var color = request.param('color');
-		console.log(color);
-    response.json({"hellp" : "world"})
+		var acct_id = request.param('acct_id'); // wallet specifit account id
+		var to_address = request.param('to_address'); //bitcoin wallet address of person
+		var amount = request.param('amount'); // dollars
+		sendBit(acct_id,to_address,amount);
+    response.json({"success" : "ya!"});
+});
+
+app.get("/fundProject/", function(request, response, next) {
+    console.log("send money")
+		var acct_id = request.param('acct_id'); // wallet specifit account id
+		var email = request.param('email'); //email address of funder
+		var amount = request.param('amount'); // dollars
+		console.log(acct_id);
+		console.log(email);
+		console.log(amount);
+		requestBit(acct_id,email,amount);
+    response.json({"success" : "ya!"});
 });
 
 app.get("/*", function(request, response, next) {
     console.log("404 not found")
     response.sendFile(__dirname + '/public/404.html')
 });
+
+var Client = require('coinbase').Client;
+
+var client = new Client({
+  'apiKey': 'xN5h9TfOKmS6GB4o',
+  'apiSecret': 'xwPMH9BBG1sxx9uWYwAsZS3AxnxioxtF',
+});
+
+var rValue;
+
+//Create a new wallet for a project
+function createAcct(project_name){
+  client.createAccount({'name': project_name}, function(err, acct) {
+    rValue = acct.id;
+  });
+
+}
+
+console.log(createAcct("Wallet 2"));
+
+//Delete a wallet after a project is over or canceled
+function delAcct(id){
+  client.getAccount(id, function(err, acct) {
+      acct.delete(function(err, resp) {});
+  });
+}
+
+//Function to get balance (in BTC)
+function getBalance(id){
+  client.getAccount(id, function(err, acct) {
+      rValue = acct.balance.amount;
+  });
+}
+
+//Function to get balance (in USD)
+function getNativeBalanceN(id){
+  client.getAccount(id, function(err, acct) {
+      rValue = acct.native_balance.amount;
+  });
+}
+
+//Function to get time wallet was created
+function getStart(id){
+  client.getAccount(id, function(err, acct) {
+      rValue = acct.created_at;
+  });
+}
+
+//Send money from our account to a user
+function sendBit(acct_id,to_address,amount){
+  client.getAccount(acct_id,function(err, acct) {
+    acct.sendMoney({'to': to_address,
+                     'amount': amount,
+                     'currency': 'USD'},
+                     function(err, tx) {
+      });
+  });
+}
+
+//Request money from a given email address
+function requestBit(acct_id,email,amount){
+  client.getAccount(acct_id,function(err, acct) {
+    acct.requestMoney({'to': email,
+                        'amount': amount,
+                        'currency': 'USD'}, function(err, tx) {
+      });
+  });
+}
+
+function getValue() {
+  return rValue;
+}
