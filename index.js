@@ -71,6 +71,13 @@ app.post('/api/', function (req, res) {
 
 // static website code
 
+app.get("/sendMoney/", function(request, response, next) {
+    console.log("send money")
+		var color = request.param('color');
+		console.log(color);
+    response.json({"hellp" : "world"})
+});
+
 app.get("/*", function(request, response, next) {
     console.log("404 not found")
     response.sendFile(__dirname + '/public/404.html')
