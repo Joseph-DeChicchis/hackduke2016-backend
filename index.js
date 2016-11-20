@@ -1,8 +1,5 @@
 'use strict'
 
-var send_message = require('./send_message');
-var company_search = require('./company_search');
-
 const express = require('express');
 const bodyParser = require('body-parser');
 const request = require('request');
